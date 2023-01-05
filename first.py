@@ -45,4 +45,5 @@ def main():
     df = get_stock_historical_data(stock_client, symbols, timeframe, start, end)
     print(df)
 
-main()
+if __name__ == '__main__':
+    main()

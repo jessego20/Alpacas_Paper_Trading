@@ -18,4 +18,5 @@ def get_account_info(keys):
     }
     print(json.dumps(account_info, indent=4))
 
-    # get_account_info(config.KEYS)
+if __name__ == '__main__':
+    get_account_info(config.KEYS)
