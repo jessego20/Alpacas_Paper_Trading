@@ -11,5 +11,3 @@ from alpaca.data import CryptoDataStream, StockDataStream
 from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
 
 get_account_info(config.KEYS)
-
-#test
