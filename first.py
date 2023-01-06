@@ -4,12 +4,14 @@ import numpy as np
 import datetime
 # My file imports
 import config
-from account import get_account_info
-# Market Data imports
+import account
+# Alpacas Market Data imports
 from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient
 from alpaca.data import CryptoDataStream, StockDataStream
 from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
+# Technical Analysis import
+import btalib
 
 '''
 Parameters: 
@@ -23,7 +25,7 @@ Returns:
 '''
 def get_stock_historical_data(stock_client, symbols, timeframe, start=None, end=None):
     request_params = StockBarsRequest(
-        symbol_or_symbols=['AAPL'],
+        symbol_or_symbols=symbols,
         timeframe=timeframe,
         start=start,
         end=end
@@ -34,16 +36,22 @@ def get_stock_historical_data(stock_client, symbols, timeframe, start=None, end=
     return bars_df
 
 def main():
-    get_account_info(config.KEYS)
+    account.get_account_info(config.KEYS)
 
     stock_client = StockHistoricalDataClient(config.API_KEY,  config.SECRET_KEY)
 
-    symbols = ['AAPL']
+    with open('data/qqq.csv') as f:
+        qqq_holdings = f.readlines()
+    
+    symbols = [holding.split(',')[2].strip() for holding in qqq_holdings[1:]]
     timeframe = TimeFrame.Day
     start = datetime.datetime(2022,1,1)
     end = datetime.datetime(2022,12,31)
     df = get_stock_historical_data(stock_client, symbols, timeframe, start, end)
     print(df)
+
+    sma = btalib.sma(df, period = 30)
+    print(sma.df)
 
 if __name__ == '__main__':
     main()
