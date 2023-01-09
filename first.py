@@ -38,16 +38,21 @@ def get_stock_historical_data(stock_client, symbol, timeframe, start=None, end=N
     bars_df = bars.df
     return bars_df.loc[symbol]
 
-def main():
-    account.get_account_info(config.KEYS)
-    
+'''
+Parameters:
+    stock_index: name of the stock index
+    start: datetime start
+Return:
+    None
+Writes the daily stock data for every company in the index to individual csv files.
+Data is from the entered start day until now.
+'''
+def write_stock_data_to_files(stock_index, start, timeframe):
     stock_client = StockHistoricalDataClient(config.API_KEY,  config.SECRET_KEY)
-    stock_index = 'qqq'
     with open(f'data/{stock_index}.csv') as f:
         qqq_holdings = f.readlines()
     symbols = [holding.split(',')[2].strip() for holding in qqq_holdings[1:]]
-    timeframe = TimeFrame.Day
-    start = datetime.datetime(2022,1,1)
+    print(timeframe)
     for symbol in symbols:
         # gets data frame of stock data
         df = get_stock_historical_data(stock_client, symbol, timeframe, start)
@@ -61,10 +66,23 @@ def main():
         df['signal'] = macd.df['signal']
         df['histogram'] = macd.df['histogram']
         # write data to file
-        filename = f'data/daily/{symbol}.txt'
+        filename = f'data/{stock_index}/{timeframe}/{symbol}_{timeframe}.txt'
         with open(filename, 'w') as f:
             f.write(df.to_csv())
-        
+
+
+def main():
+    stock_index = 'qqq'
+    timeframe = TimeFrame.Day 
+    start = datetime.datetime(2022,1,1)
+    write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
+    
+    account.get_account_info(config.KEYS)
+
+    symbol = 'AAPL'
+    df = pd.read_csv(f'data/qqq/1Day/{symbol}_1Day.txt', parse_dates=True, index_col='timestamp')
+    print(df)
+
     # Getting fundamental data
     sf.set_data_dir('data/simfin/')
     sf.set_api_key(api_key=config.SIMFIN_KEY)
