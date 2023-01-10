@@ -1,6 +1,8 @@
 # General imports
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import datetime
 # My file imports
 import config
@@ -75,19 +77,31 @@ def main():
     stock_index = 'qqq'
     timeframe = TimeFrame.Day 
     start = datetime.datetime(2022,1,1)
-    write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
+    # write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
     
-    account.get_account_info(config.KEYS)
+    # account.get_account_info(config.KEYS)
 
     symbol = 'AAPL'
     df = pd.read_csv(f'data/qqq/1Day/{symbol}_1Day.txt', parse_dates=True, index_col='timestamp')
-    print(df)
+    # print(df)
 
     # Getting fundamental data
     sf.set_data_dir('data/simfin/')
     sf.set_api_key(api_key=config.SIMFIN_KEY)
-    df_income = sf.load_income(variant='annual', market='us')
-    print(df_income.loc['AAPL'])
+    df_income = sf.load(dataset='income', variant='annual', market='us', index=[TICKER, REPORT_DATE],
+              parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
+    df_balance = sf.load(dataset='balance', variant='annual', market='us', index=[TICKER, REPORT_DATE],
+              parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
+    df_cashflow = sf.load(dataset='cashflow', variant='annual', market='us', index=[TICKER, REPORT_DATE],
+              parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
+    df_derived = sf.load(dataset='derived', variant='annual', market='us', index=[TICKER, REPORT_DATE],
+              parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
+    ticker = 'AAPL'
+    cols = [REVENUE, NET_INCOME]
+    print(df_income.loc[ticker][cols])
+    # print(df_balance.loc[ticker])
+    # print(df_cashflow.loc[ticker][[NET_CASH_OPS, NET_CASH_INV, NET_CASH_FIN, NET_CHG_CASH]])
+    # print(df_derived.loc[ticker])
         
 
 if __name__ == '__main__':
