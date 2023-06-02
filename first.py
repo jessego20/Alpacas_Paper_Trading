@@ -3,8 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy
+import json
 import datetime
 # My file imports
+from util import *
 import config
 import account
 # Alpacas Market Data imports
@@ -52,9 +55,8 @@ Data is from the entered start day until now.
 def write_stock_data_to_files(stock_index, start, timeframe):
     stock_client = StockHistoricalDataClient(config.API_KEY,  config.SECRET_KEY)
     with open(f'data/{stock_index}.csv') as f:
-        qqq_holdings = f.readlines()
-    symbols = [holding.split(',')[2].strip() for holding in qqq_holdings[1:]]
-    print(timeframe)
+        index_holdings = f.readlines()
+    symbols = [holding.split(',')[2].strip() for holding in index_holdings[1:]]
     for symbol in symbols:
         # gets data frame of stock data
         df = get_stock_historical_data(stock_client, symbol, timeframe, start)
@@ -72,20 +74,56 @@ def write_stock_data_to_files(stock_index, start, timeframe):
         with open(filename, 'w') as f:
             f.write(df.to_csv())
 
+'''
+Time Series Momentum Correlation Analysis
+Parameters:
+    df: dataframe of stock prices
+Returns: a dataframe where rows are lookback, hold_days tuples
+         and columns are [correlation coefficient, p-value]
+'''
+def TSM_correlation(df, using_simfin=True):
+    if using_simfin:
+        open_prices = df[OPEN]
+        close_prices  = df[CLOSE]
+    else:
+        open_prices = df['open']
+        close_prices = df['close']
+
+    dict = {}
+    for lookback in [1, 5, 10, 25, 60, 120, 250]:
+        for hold_days in [1, 5, 10, 25, 60, 120, 250]:
+            step = hold_days
+            if lookback < hold_days:
+                step = lookback
+            lookback_returns = [100*(close_prices[i]-open_prices[i-lookback+1])/open_prices[i-lookback+1] for i in range(lookback-1,len(close_prices)-hold_days,step)]
+            hold_days_returns = [100*(close_prices[i]-open_prices[i-hold_days+1])/open_prices[i-hold_days+1] for i in range(lookback+hold_days-1,len(close_prices),step)]
+            cc_pv = scipy.stats.pearsonr(lookback_returns, hold_days_returns)
+            dict[(lookback, hold_days)] = (round(cc_pv[0], 4), round(cc_pv[1], 4))
+    return pd.DataFrame.from_dict(dict, orient='index', columns=['Correlation Coefficient', 'p-value'])
+
 
 def main():
-    stock_index = 'qqq'
-    timeframe = TimeFrame.Day 
-    start = datetime.datetime(2022,1,1)
+    # stock_index = 'qqq'
+    # timeframe = TimeFrame.Day 
+    # start = datetime.datetime(2016,1,1)
     # write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
     
     # account.get_account_info(config.KEYS)
 
-    symbol = 'AAPL'
-    df = pd.read_csv(f'data/qqq/1Day/{symbol}_1Day.txt', parse_dates=True, index_col='timestamp')
-    # print(df)
+    sf.set_data_dir('data/simfin/')
+    sf.set_api_key(api_key=config.SIMFIN_KEY)
+    qqq_tickers = [ticker.strip() for ticker in pd.read_csv('data/qqq.csv')['Holding Ticker']
+                    if ticker.strip() not in ['GOOGL','ASML', 'PDD', 'AZN', 'GFS', 'WBD']]
+    df_shares = sf.load(dataset='shareprices', variant='daily', market='us', index=[TICKER, DATE], refresh_days=1)
+    df_qqq_shares = df_shares.loc[qqq_tickers]
 
+    # Time Series Momentum correlation analysis
+    ticker = 'AAPL'
+    df_corr = TSM_correlation(df_qqq_shares.loc[ticker])
+    print(df_corr)
+    
     # Getting fundamental data
+    '''
     sf.set_data_dir('data/simfin/')
     sf.set_api_key(api_key=config.SIMFIN_KEY)
     df_income = sf.load(dataset='income', variant='annual', market='us', index=[TICKER, REPORT_DATE],
@@ -96,13 +134,23 @@ def main():
               parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
     df_derived = sf.load(dataset='derived', variant='annual', market='us', index=[TICKER, REPORT_DATE],
               parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
+    
     ticker = 'AAPL'
-    cols = [REVENUE, NET_INCOME]
-    print(df_income.loc[ticker][cols])
+
+    income_cols = [REVENUE, NET_INCOME]
+    # print(df_income.loc[ticker][income_cols])
+
     # print(df_balance.loc[ticker])
-    # print(df_cashflow.loc[ticker][[NET_CASH_OPS, NET_CASH_INV, NET_CASH_FIN, NET_CHG_CASH]])
-    # print(df_derived.loc[ticker])
-        
+
+    cashflow_cols = [NET_CASH_OPS, NET_CASH_INV, NET_CASH_FIN, NET_CHG_CASH]
+    # print(df_cashflow.loc[ticker][cashflow_cols])
+
+    derived_cols = [EBITDA, FCF, EPS_BASIC, EPS_DILUTED]
+    print(df_derived.loc[ticker][derived_cols])
+    '''
+    
+
+
 
 if __name__ == '__main__':
     main()
