@@ -7,7 +7,6 @@ import scipy
 import json
 import datetime
 # My file imports
-from util import *
 import config
 import account
 # Alpacas Market Data imports
