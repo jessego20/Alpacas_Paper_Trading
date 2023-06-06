@@ -6,6 +6,7 @@ import seaborn as sns
 import scipy
 import json
 import datetime
+import os
 # My file imports
 import config
 import account
@@ -102,10 +103,11 @@ def TSM_correlation(df, using_simfin=True):
 
 
 def main():
-    # stock_index = 'qqq'
-    # timeframe = TimeFrame.Day 
-    # start = datetime.datetime(2016,1,1)
-    # write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
+    stock_index = 'qqq'
+    timeframe = TimeFrame.Day 
+    start = datetime.datetime(2016,1,1)
+    write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
+    exit()
     
     # account.get_account_info(config.KEYS)
 
