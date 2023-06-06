@@ -19,7 +19,6 @@ import btalib
 # Company financials import
 import simfin as sf
 from simfin.names import *
-# test
 
 '''
 Parameters: 
