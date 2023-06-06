@@ -103,14 +103,18 @@ def TSM_correlation(df, using_simfin=True):
 
 
 def main():
+    # account.get_account_info(config.KEYS)
+
+    # Gets stock data for each stock in the given index
+    '''
     stock_index = 'qqq'
     timeframe = TimeFrame.Day 
     start = datetime.datetime(2016,1,1)
     write_stock_data_to_files(stock_index=stock_index, start=start, timeframe=timeframe)
-    exit()
-    
-    # account.get_account_info(config.KEYS)
+    '''
 
+    # Uses simfin's daily stock prices data to perform Time Series Momentum correlation analysis
+    '''
     sf.set_data_dir('data/simfin/')
     sf.set_api_key(api_key=config.SIMFIN_KEY)
     qqq_tickers = [ticker.strip() for ticker in pd.read_csv('data/qqq.csv')['Holding Ticker']
@@ -122,6 +126,7 @@ def main():
     ticker = 'AAPL'
     df_corr = TSM_correlation(df_qqq_shares.loc[ticker])
     print(df_corr)
+    '''
     
     # Getting fundamental data
     '''
