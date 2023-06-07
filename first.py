@@ -103,6 +103,8 @@ def TSM_correlation(df, using_simfin=True):
 
 
 def main():
+    sf.set_data_dir('data/simfin/')
+    sf.set_api_key(api_key=config.SIMFIN_KEY)
     # account.get_account_info(config.KEYS)
 
     # Gets stock data for each stock in the given index
@@ -115,8 +117,6 @@ def main():
 
     # Uses simfin's daily stock prices data to perform Time Series Momentum correlation analysis
     '''
-    sf.set_data_dir('data/simfin/')
-    sf.set_api_key(api_key=config.SIMFIN_KEY)
     qqq_tickers = [ticker.strip() for ticker in pd.read_csv('data/qqq.csv')['Holding Ticker']
                     if ticker.strip() not in ['GOOGL','ASML', 'PDD', 'AZN', 'GFS', 'WBD']]
     df_shares = sf.load(dataset='shareprices', variant='daily', market='us', index=[TICKER, DATE], refresh_days=1)
@@ -130,8 +130,6 @@ def main():
     
     # Getting fundamental data
     '''
-    sf.set_data_dir('data/simfin/')
-    sf.set_api_key(api_key=config.SIMFIN_KEY)
     df_income = sf.load(dataset='income', variant='annual', market='us', index=[TICKER, REPORT_DATE],
               parse_dates=[REPORT_DATE, PUBLISH_DATE, RESTATED_DATE], refresh_days=1)
     df_balance = sf.load(dataset='balance', variant='annual', market='us', index=[TICKER, REPORT_DATE],
@@ -154,7 +152,6 @@ def main():
     derived_cols = [EBITDA, FCF, EPS_BASIC, EPS_DILUTED]
     print(df_derived.loc[ticker][derived_cols])
     '''
-    
 
 
 
